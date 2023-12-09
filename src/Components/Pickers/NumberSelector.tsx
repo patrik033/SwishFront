@@ -34,21 +34,22 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ min, max, onChange }) =
     return (
         <div className="flex items-center space-x-2 mt-2">
             <button
-                className="px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
+                className="px-2 py-1 border rounded transition-colors duration-300 ease-in-out bg-blue-500 text-white hover:bg-green-700 focus:outline-none focus:border-green-700"
                 onClick={handleDecrement}
             >
                 -
             </button>
             <input
                 type="number"
-                className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                className="w-16 px-2 py-1 border border-gray-300 rounded-full text-center bg-gray-100 "
                 value={selectedNumber}
                 onChange={handleInputChange}
                 min={min}
                 max={max}
+
             />
             <button
-                className="px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
+                className="px-2 py-1 border rounded transition-colors duration-300 ease-in-out bg-blue-500 text-white hover:bg-green-700 focus:outline-none focus:border-green-700"
                 onClick={handleIncrement}
             >
                 +

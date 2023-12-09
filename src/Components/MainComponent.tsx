@@ -1,8 +1,9 @@
 import React from 'react';
-import Navbar from './Navbar/Navbar';
 import axios from 'axios';
-import RenderProducts from './RenderProducts';
+//import RenderProducts from './RenderProducts';
 import * as signalR from '@microsoft/signalr';
+import PaginationComponent from './ProductPages/Pagination';
+import GetProducts from './ProductPages/RenderProducts';
 
 interface Product {
     id: string;
@@ -10,16 +11,30 @@ interface Product {
     price: number;
     image: string | null;
     stock: number;
+    type: string;
+    horsePower: number;
+    year: number;
+    painterName: string;
 }
 
 interface DeletedProduct {
     id: string;
 }
 
+interface Pagination {
+    CurrentPage: number;
+    TotalPages: number;
+    PageSize: number;
+    TotalCount: number;
+    HasPrevious: boolean;
+    HasNext: boolean;
+}
+
 
 
 const MainComponent: React.FC = () => {
     const [products, setProducts] = React.useState<Product[]>([]);
+    const [pagination, setPagination] = React.useState<Pagination | null>(null);
 
     React.useEffect(() => {
         const connection = new signalR.HubConnectionBuilder()
@@ -63,25 +78,48 @@ const MainComponent: React.FC = () => {
 
 
 
-    React.useEffect(() => {
-        axios.get<Product[]>('http://localhost:5222/api/products')
+
+    const fetchProducts = (pageNumber: number) => {
+        axios.get<Product[]>(`http://localhost:5222/paged?PageNumber=${pageNumber}&PageSize=5`)
             .then(response => {
                 setProducts(response.data);
+
+                // Extract pagination information from headers
+                const paginationHeader = response.headers['x-pagination'];
+                const paginationData: Pagination = JSON.parse(paginationHeader);
+                setPagination(paginationData);
             })
             .catch(error => {
                 console.error('Error fetching product:', error);
             });
+    };
+
+    const handlePageChange = (selected: number) => {
+        fetchProducts(selected + 1); // Adding 1 because the page numbers are 1-based
+    };
+
+
+
+    React.useEffect(() => {
+        fetchProducts(1);
     }, []);
 
+
     return (
-        <>
-            <Navbar />
+        <div className='mb-3'>
             {products.length > 0 && (
                 <div className='mt-20'>
-                    <RenderProducts products={products} />
+                    <GetProducts products={products} />
+
                 </div>
             )}
-        </>
+            {pagination && (
+                <PaginationComponent
+                    pagination={pagination}
+                    onPageChange={handlePageChange}
+                />
+            )}
+        </div>
     );
 };
 
