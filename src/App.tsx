@@ -6,6 +6,11 @@ import Navbar from "./Components/NavAndFooter/Navbar"
 
 import "./index.css"
 import Footer from "./Components/NavAndFooter/Footer"
+import Login from "./Components/AuthNavigation/Login"
+import LogOut from "./Components/AuthNavigation/LogOut"
+import Register from "./Components/AuthNavigation/Register"
+import RegisterConfirmation from "./Components/AuthNavigation/RegisterConfirmation"
+import ResendEmailActivationLink from "./Components/AuthNavigation/ResendEmailActivationLink"
 
 function App() {
 
@@ -17,6 +22,11 @@ function App() {
         <Routes>
           <Route path="/" element={<MainComponent />} />
           <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/logout" element={<LogOut />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/registerconfirmation" element={<RegisterConfirmation />} />
+          <Route path="/resendEmailLink" element={<ResendEmailActivationLink />} />
         </Routes>
         <Footer />
       </BrowserRouter>
