@@ -1,4 +1,87 @@
+import React, { FormEvent, useState } from "react";
+import axios, { AxiosError } from "axios";
+import { saveToken, getToken } from "./authUtils";
+import { useUser } from "./User/UserContext";
+import { useNavigate } from "react-router-dom";
+interface LoginResponse {
+    statusCode: number;
+    isSuccess: boolean;
+    errorMessages: string[];
+    result: {
+        email: string;
+        token: string;
+    };
+}
+
 const Login: React.FC = () => {
+
+    const [username, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+    const [error, setError] = useState<string | null>(null);
+    const { setUser } = useUser();
+    const navigate = useNavigate();
+
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEmail(e.target.value);
+        setError(null);
+    }
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPassword(e.target.value);
+        setError(null);
+    }
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+
+        // Basic validation
+        if (!username || !password) {
+            setError('Please enter both email and password.');
+            return;
+        }
+
+        try {
+            const response = await axios.post<LoginResponse>('http://localhost:5025/api/Authentication/login', {
+                username,
+                password,
+            });
+
+            if (response.status === 200) {
+                // Handle successful login response
+                const { isSuccess, result, errorMessages } = response.data;
+                console.log({ isSuccess, result, errorMessages });
+
+                if (isSuccess && result) {
+                    const { email, token } = result;
+
+                    setUser({ email, token });
+                    saveToken({ email, token });
+                    navigate("/");
+
+
+
+                    const savedToken = getToken();
+                    console.log({ savedToken });
+                    // Store the token in local storage or HTTPOnly cookie if needed
+
+
+                    // Redirect to another page or update the UI accordingly
+                } else {
+                    setError(errorMessages[0] || 'Login failed.');
+                }
+            }
+        } catch (error) {
+            // Handle login error
+            if (axios.isAxiosError(error)) {
+                const axiosError = error as AxiosError;
+                console.error('Login failed:', axiosError.message);
+                setError('Invalid email or password. Please try again.');
+            } else {
+                console.error('Login failed:', error);
+                setError('An unexpected error occurred. Please try again.');
+            }
+        }
+    };
 
     return (
         <div className="mt-4">
@@ -16,7 +99,7 @@ const Login: React.FC = () => {
 
 
                     <div className="md:w-6/12 w-full">
-                        <form>
+                        <form onSubmit={handleSubmit}>
                             <div className="mx-4">
 
                                 {/* email input */}
@@ -26,7 +109,10 @@ const Login: React.FC = () => {
                                         type="email"
                                         name="email"
                                         id="email"
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" required={false} />
+                                        value={username}
+                                        onChange={handleEmailChange}
+                                        required={true}
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" />
                                 </div>
 
 
@@ -41,9 +127,16 @@ const Login: React.FC = () => {
                                         type="password"
                                         name="password"
                                         id="password"
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required={false} />
+                                        value={password}
+                                        onChange={handlePasswordChange}
+                                        required={false}
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
 
                                 </div>
+
+                                {/* Display error messages */}
+                                {error && <p className="text-red-500">{error}</p>}
+
 
                                 <div className="flex items-start">
                                     <div className="flex items-center h-5">
