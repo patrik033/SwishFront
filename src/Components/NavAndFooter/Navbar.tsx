@@ -1,6 +1,8 @@
 import React from "react";
 import { NavLink } from 'react-router-dom';
 import { useUser } from "../Auth/User/UserContext";
+import CartIcon from "../Cart/CartIcon";
+
 
 const Navbar: React.FC = () => {
 
@@ -120,6 +122,21 @@ const Navbar: React.FC = () => {
                                         >
                                             Sign out
                                         </NavLink>
+                                    </li>
+                                    <li>
+                                        <div className="flex items-center space-x-4">
+                                            {/* CartDetails component */}
+
+
+                                            {/* CartIcon component */}
+                                            <NavLink to="/cart" className="flex items-center space-x-2">
+                                                <span>Cart: </span>
+                                                <CartIcon />
+                                            </NavLink>
+                                        </div>
+
+
+
                                     </li>
                                 </>
                             ) : (
