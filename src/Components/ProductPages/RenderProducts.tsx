@@ -1,4 +1,4 @@
-import NumberSelector from "../Pickers/NumberSelector";
+//import NumberSelector from "../Pickers/NumberSelector";
 import { Link } from "react-router-dom";
 
 interface Product {
@@ -39,9 +39,7 @@ const GetProducts: React.FC<GetProductsProps> = ({ products }) => {
                             <p className="text-gray-700 text-base">Price: {sek.format(product.price)}</p>
                             <p className="text-gray-700 text-base">Stock: {product.stock}</p>
                         </div>
-                        <div className="mb-3 px-6">
-                            <NumberSelector min={0} max={product.stock} onChange={() => { }} />
-                        </div>
+
                         <div className="text-blue-500 hover:text-blue-800">
                             View Details
                         </div>

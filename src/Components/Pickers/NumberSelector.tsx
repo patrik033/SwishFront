@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 interface NumberSelectorProps {
     min: number;
     max: number;
-    onChange: (value: number) => void;
+    onChangeValue: (value: number) => void;
 }
 
-const NumberSelector: React.FC<NumberSelectorProps> = ({ min, max, onChange }) => {
+const NumberSelector: React.FC<NumberSelectorProps> = ({ min, max, onChangeValue }) => {
     const [selectedNumber, setSelectedNumber] = useState(min);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,19 +16,19 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ min, max, onChange }) =
         value = Math.max(min, Math.min(value, max));
 
         setSelectedNumber(value);
-        onChange(value);
+        onChangeValue(value);
     };
 
     const handleIncrement = () => {
         const newValue = Math.min(selectedNumber + 1, max);
         setSelectedNumber(newValue);
-        onChange(newValue);
+        onChangeValue(newValue);
     };
 
     const handleDecrement = () => {
         const newValue = Math.max(selectedNumber - 1, min);
         setSelectedNumber(newValue);
-        onChange(newValue);
+        onChangeValue(newValue);
     };
 
     return (

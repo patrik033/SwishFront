@@ -13,6 +13,9 @@ import RegisterConfirmation from "./Components/Auth/RegisterConfirmation"
 import ResendEmailActivationLink from "./Components/Auth/ResendEmailActivationLink"
 import { UserProvider } from "./Components/Auth/User/UserContext"
 import CartDetails from "./Components/Cart/CartDetails"
+import Checkout from "./Components/Checkout/Checkout"
+import ReturnCheckout from "./Components/CheckoutReturn/ReturnCheckout"
+
 
 function App() {
 
@@ -32,6 +35,8 @@ function App() {
             <Route path="/registerconfirmation" element={<RegisterConfirmation />} />
             <Route path="/resendEmailLink" element={<ResendEmailActivationLink />} />
             <Route path="/cart" element={<CartDetails />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/return" element={<ReturnCheckout />} />
           </Routes>
           <Footer />
         </BrowserRouter>
