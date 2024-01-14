@@ -107,7 +107,8 @@ const CartDetails: React.FC = () => {
 
             const response = await axios.post(`http://localhost:5056/api/Stripe/${user?.email}`)
             const data = response.data;
-            setClientSecret(data.result.clientSecret);
+            console.log(data)
+            setClientSecret(data.clientSecret);
         } catch (error) {
             console.error('Error during checkout:', error);
         }

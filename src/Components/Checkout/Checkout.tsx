@@ -13,9 +13,6 @@ const Checkout: React.FC<CheckoutPageProps> = () => {
     const location = useLocation();
     const clientSecret = location.state && location.state.clientSecret;
 
-    console.log(clientSecret)
-
-
     return (
         <div id="checkout">
             {clientSecret && (
