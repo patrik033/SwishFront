@@ -2,7 +2,6 @@ import axios from 'axios';
 import { useUser } from '../Auth/User/UserContext';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import NumberSelector from '../Pickers/NumberSelector';
 
 interface CartItem {
     Id: string;
@@ -21,10 +20,11 @@ interface CartDetailsResponse {
     shoppingCartItems: CartItem[];
 }
 
+
 const CartDetails: React.FC = () => {
     const [cartDetails, setCartDetails] = useState<CartDetailsResponse | null>(null);
     const { user } = useUser();
-    const [clientSecret, setClientSecret] = useState<string | null>(null);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -48,6 +48,12 @@ const CartDetails: React.FC = () => {
         currency: "SEK",
         //minimumFractionDigits: 0
     });
+
+    const handleNavigateToCheckout = () => {
+        if (cartDetails) {
+            navigate('/checkoutpage', { state: { cartDetails } });
+        }
+    };
 
     const handleDecrease = async (userEmail: string | undefined, productId: string) => {
         try {
@@ -102,28 +108,10 @@ const CartDetails: React.FC = () => {
         }
     };
 
-    const handleCheckout = async () => {
-        try {
-
-            const response = await axios.post(`http://localhost:5056/api/Stripe/${user?.email}`)
-            const data = response.data;
-            console.log(data)
-            setClientSecret(data.clientSecret);
-        } catch (error) {
-            console.error('Error during checkout:', error);
-        }
-    };
-
-    useEffect(() => {
-        if (clientSecret !== null) {
-            navigate('/checkout', { state: { clientSecret } });
-        }
-    }, [clientSecret])
 
 
     return (
         <div>
-
             <div>
                 <h2 className="text-2xl font-bold mb-4">Cart Details</h2>
                 {cartDetails ? (
@@ -165,12 +153,17 @@ const CartDetails: React.FC = () => {
                                 </li>
                             ))}
                         </ul>
+
                         <div className=" text-white py-2 px-4 mb-4">
                             <p className="bg-blue-500 text-xl font-bold mb-2">Total Amount: {sek.format(cartDetails.totalAmount)}</p>
                             <p className="bg-blue-500 text-lg font-bold mb-2">Total Count: {cartDetails.totalCount}</p>
-                            <button className="bg-green-500 text-white py-2 px-4 rounded-full hover:bg-green-700 focus:outline-none"
-                                onClick={handleCheckout}>
-                                Checkout
+
+                            <button
+                                className="bg-green-500 text-white py-2 px-4 rounded-full hover:bg-green-700 focus:outline-none"
+
+                                onClick={handleNavigateToCheckout}
+                            >
+                                Proceed to Checkout
                             </button>
                         </div>
                     </div>
@@ -178,7 +171,6 @@ const CartDetails: React.FC = () => {
                     <p>Loading cart details...</p>
                 )}
             </div>
-
         </div>
     );
 };

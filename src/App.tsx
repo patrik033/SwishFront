@@ -15,6 +15,7 @@ import { UserProvider } from "./Components/Auth/User/UserContext"
 import CartDetails from "./Components/Cart/CartDetails"
 import Checkout from "./Components/Checkout/Checkout"
 import ReturnCheckout from "./Components/CheckoutReturn/ReturnCheckout"
+import CheckoutPage from "./Components/Cart/CheckoutPage"
 
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
             <Route path="/cart" element={<CartDetails />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/return" element={<ReturnCheckout />} />
+            <Route path="/checkoutpage" element={<CheckoutPage />} />
           </Routes>
           <Footer />
         </BrowserRouter>
