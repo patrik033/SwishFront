@@ -1,6 +1,9 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import React, { ChangeEvent, FormEvent } from "react";
+import { useTrail, a } from '@react-spring/web';
 import axios from "axios";
+import { validateEmail, validatePassword, validateCity, validateStreetAddress, validateStreetNumber, validateZipCode } from "./Validations/validationUtils.ts";
+import AddressInputFields from "./FormInputs/AddressInputFields.tsx";
 
 const Register: React.FC = () => {
 
@@ -8,11 +11,27 @@ const Register: React.FC = () => {
         email: string;
         password: string;
         role: string;
+        city: string;
+        streetAddress: string;
+        streetNumber: string;
+        zipCode: string;
+        billingCity: string | null;
+        billingStreetAddress: string | null;
+        billingStreetNumber: string | null;
+        billingZipCode: string | null;
     }
 
     interface Errors {
         email: string;
         password: string;
+        city: string;
+        streetAddress: string;
+        streetNumber: string;
+        zipCode: string;
+        billingCity: string | null;
+        billingStreetAddress: string | null;
+        billingStreetNumber: string | null;
+        billingZipCode: string | null;
     }
 
 
@@ -22,74 +41,137 @@ const Register: React.FC = () => {
         email: '',
         password: '',
         role: 'User',
+        city: '',
+        streetAddress: '',
+        streetNumber: '',
+        zipCode: '',
+        billingCity: null,
+        billingStreetAddress: null,
+        billingStreetNumber: null,
+        billingZipCode: null,
     });
 
     const [errors, setErrors] = React.useState<Errors>({
         email: '',
         password: '',
+        city: '',
+        streetAddress: '',
+        streetNumber: '',
+        zipCode: '',
+        billingCity: null,
+        billingStreetAddress: null,
+        billingStreetNumber: null,
+        billingZipCode: null,
     });
+
+
+
+
+    const [billingEnabled, setBillingEnabled] = React.useState<boolean>(false);
+    const [useSameAddress, setUseSameAddress] = React.useState(false);
+    const toggleBillingFields = () => {
+        setBillingEnabled(prevState => !prevState);
+    }
+
+
+    React.useEffect(() => {
+        if (useSameAddress) {
+            setFormData((prevData) => ({
+                ...prevData,
+                billingStreetAddress: formData.streetAddress,
+                billingCity: formData.city,
+                billingStreetNumber: formData.streetNumber,
+                billingZipCode: formData.zipCode,
+            }));
+        }
+        else {
+            setFormData((prevData) => ({
+                ...prevData,
+                billingStreetAddress: null,
+                billingCity: null,
+                billingStreetNumber: null,
+                billingZipCode: null,
+            }));
+        }
+    }, [useSameAddress, formData.streetAddress, formData.city, formData.streetNumber, formData.zipCode]);
+
+
+
+    const handleUseSameAddressChange = (event: any) => {
+        const { checked } = event.target;
+        setUseSameAddress(checked);
+    };
+
+    const billingFields = [
+        {
+            label: 'Billing Address',
+            name: 'billingStreetAddress',
+            value: formData.billingStreetAddress || '',
+            error: errors.billingStreetAddress,
+        },
+        {
+            label: 'Billing City',
+            name: 'billingCity',
+            value: formData.billingCity || '',
+            error: errors.billingCity,
+        },
+        {
+            label: 'Billing Street Number',
+            name: 'billingStreetNumber',
+            value: formData.billingStreetNumber || '',
+            error: errors.billingStreetNumber,
+        },
+        {
+            label: 'Billing Zip Code',
+            name: 'billingZipCode',
+            value: formData.billingZipCode || '',
+            error: errors.billingZipCode,
+        },
+    ];
+
+    const trail = useTrail(billingFields.length, {
+        config: { mass: 5, tension: 2000, friction: 300 },
+        opacity: billingEnabled ? 1 : 0,
+        x: billingEnabled ? 0 : 20,
+        height: billingEnabled ? 'auto' : 0,
+        from: { opacity: 0, x: 20, height: 0 },
+    });
+
 
     // Function to handle form input changes
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value,
+            [name]: value,
         });
 
         // Reset validation error for the changed field
         setErrors({
             ...errors,
-            [e.target.name]: '',
+            [name]: '',
         });
+
     };
 
-    // Function to validate email
-    const validateEmail = () => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!formData.email.trim()) {
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                email: 'Email is required',
-            }));
-        } else if (!emailRegex.test(formData.email)) {
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                email: 'Invalid email address',
-            }));
-        }
-    };
-
-    // Function to validate password
-    const validatePassword = () => {
-        // Add your password validation rules here
-        const minLength = 6;
-        if (!formData.password.trim()) {
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                password: 'Password is required',
-            }));
-        } else if (formData.password.length < minLength) {
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                password: `Password must be at least ${minLength} characters`,
-            }));
-        }
+    const handleFieldValidation = (fieldName: keyof FormData, errorMessage: string) => {
+        setErrors(prevErrors => ({
+            ...prevErrors,
+            [fieldName]: errorMessage,
+        }));
     };
 
     // Function to handle form submission
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
-        // Validate email and password before submission
-        validateEmail();
-        validatePassword();
-
         // If there are validation errors, prevent form submission
-        if (errors.email || errors.password) {
-            return;
+        const hasErrors = Object.values(errors).some(error => !!error);
+        // Check if there are any validation errors
+        if (hasErrors) {
+            return; // Prevent form submission if there are validation errors
         }
 
-        // TODO: Add your authentication register endpoint URL
         const registerEndpoint = 'http://localhost:5025/api/Authentication/register';
 
         try {
@@ -110,11 +192,10 @@ const Register: React.FC = () => {
         }
     };
 
+
     return (
-
-        <div className="mt-4">
-            <section className="h-screen">
-
+        <div className="mt-4 flex flex-col min-h-screen">
+            <section className="flex-grow">
                 <div className="container  flex flex-col items-center justify-center md:flex-row">
 
                     <div className="mt-4 mb-12 md:mb-0 md:w-6/12">
@@ -128,52 +209,148 @@ const Register: React.FC = () => {
                     <div className="md:w-6/12 w-full">
                         <form onSubmit={handleSubmit}>
                             <div className="mx-4">
+                                <AddressInputFields
+                                    headingValue="Your email"
+                                    value={formData.email}
+                                    error={errors.email}
+                                    htmlObject="email"
+                                    type="email"
+                                    addressName="email"
+                                    id="email"
+                                    placeholder="name@company.com"
+                                    required={true}
+                                    onChange={handleInputChange}
+                                    onBlur={(e) => validateEmail(e.target.value, handleFieldValidation)}
+                                />
 
-                                {/* email input */}
-                                <div className="relative mb-6" data-te-input-wrapper-init>
-                                    <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        id="email"
-                                        className={`bg-gray-50 border ${errors.email ? 'border-red-500' : 'border-gray-300'
-                                            } text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500`}
-                                        placeholder="name@company.com"
-                                        onChange={handleInputChange}
-                                        onBlur={validateEmail}
-                                        value={formData.email}
-                                        required
-                                    />
-                                    {errors.email && (
-                                        <p className="mt-1 text-xs text-red-500">{errors.email}</p>
-                                    )}
-                                </div>
+                                <AddressInputFields
+                                    headingValue="Your password"
+                                    value={formData.password}
+                                    error={errors.password}
+                                    htmlObject="password"
+                                    type="password"
+                                    addressName="password"
+                                    id="password"
+                                    placeholder="name@company.com"
+                                    required={true}
+                                    onChange={handleInputChange}
+                                    onBlur={(e) => validatePassword(e.target.value, handleFieldValidation)}
+                                />
+
+                                <AddressInputFields
+                                    headingValue="Address"
+                                    value={formData.streetAddress}
+                                    error={errors.streetAddress}
+                                    htmlObject="streetAddress"
+                                    type="streetAddress"
+                                    addressName="streetAddress"
+                                    id="streetAddress"
+                                    placeholder="Street Address"
+                                    required={true}
+                                    onChange={handleInputChange}
+                                    onBlur={(e) => validateStreetAddress(e.target.value, handleFieldValidation)}
+                                />
+
+                                <AddressInputFields
+                                    headingValue="City"
+                                    value={formData.city}
+                                    error={errors.city}
+                                    htmlObject="city"
+                                    type="city"
+                                    addressName="city"
+                                    id="city"
+                                    placeholder="City"
+                                    required={true}
+                                    onChange={handleInputChange}
+                                    onBlur={(e) => validateCity(e.target.value, handleFieldValidation)}
+                                />
+
+                                <AddressInputFields
+                                    headingValue="Street Number"
+                                    value={formData.streetNumber}
+                                    error={errors.streetNumber}
+                                    htmlObject="streetNumber"
+                                    type="streetNumber"
+                                    addressName="streetNumber"
+                                    id="streetNumber"
+                                    placeholder="Street Number"
+                                    required={true}
+                                    onChange={handleInputChange}
+                                    onBlur={(e) => validateStreetNumber(e.target.value, handleFieldValidation)}
+                                />
 
 
-                                <div className="relative mb-6" data-te-input-wrapper-init>
+                                <AddressInputFields
+                                    headingValue="Zip Code"
+                                    value={formData.zipCode}
+                                    error={errors.zipCode}
+                                    htmlObject="zipCode"
+                                    type="zipCode"
+                                    addressName="zipCode"
+                                    id="zipCode"
+                                    placeholder=""
+                                    required={true}
+                                    onChange={handleInputChange}
+                                    onBlur={(e) => validateZipCode(e.target.value, handleFieldValidation)}
+                                />
 
-                                    <label
-                                        htmlFor="password"
-                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                        Password
+                                <div>
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={useSameAddress}
+                                            onChange={handleUseSameAddressChange}
+                                        />
+                                        Use Address as Billing Address
                                     </label>
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        id="password"
-                                        className={`bg-gray-50 border ${errors.password ? 'border-red-500' : 'border-gray-300'
-                                            } text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500`}
-                                        onChange={handleInputChange}
-                                        onBlur={validatePassword}
-                                        value={formData.password}
-                                        required
-                                    />
-                                    {errors.password && (
-                                        <p className="mt-1 text-xs text-red-500">{errors.password}</p>
-                                    )}
-
                                 </div>
 
+                                {!useSameAddress &&
+                                    <div>
+                                        <button
+                                            onClick={() => {
+                                                toggleBillingFields();
+                                            }}
+                                            className="transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) inline-block w-full mt-3 rounded bg-blue-500 px-7 pb-2.5 pt-3 text-sm font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
+                                            data-te-ripple-init
+                                            data-te-ripple-color="light"
+                                        >
+                                            {billingEnabled ? "Hide Billing Fields" : "Show Billing Fields"}
+                                        </button>
+                                    </div>
+                                }
+
+
+                                {/* billing address fields */}
+
+                                {!useSameAddress && billingEnabled && (
+                                    <div className={` `}>
+                                        {trail.map((style, index) => (
+                                            <a.div key={index} style={style}>
+                                                <div className="relative mb-6" data-te-input-wrapper-init>
+                                                    <label
+                                                        htmlFor={billingFields[index].name}
+                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        {billingFields[index].label}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        name={billingFields[index].name}
+                                                        id={billingFields[index].name}
+                                                        className={`bg-gray-50 border ${billingFields[index].error ? 'border-red-500' : 'border-gray-300'}
+                                                         text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500`}
+                                                        placeholder="Enter your address"
+                                                        onChange={handleInputChange}
+                                                        value={billingFields[index].value}
+                                                    />
+                                                    {billingFields[index].error && (
+                                                        <p className="mt-1 text-xs text-red-500">{billingFields[index].error}</p>
+                                                    )}
+                                                </div>
+                                            </a.div>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {/* <!-- Terms and conditions --> */}
                                 <div className="flex items-start mt-4">
@@ -263,15 +440,11 @@ const Register: React.FC = () => {
                                     Continue with Twitter
                                 </a>
                             </div>
-
-
                         </form>
-
                     </div>
                 </div>
             </section>
         </div>
-
     )
 }
 

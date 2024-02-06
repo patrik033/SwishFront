@@ -40,8 +40,8 @@ function App() {
             <Route path="/return" element={<ReturnCheckout />} />
             <Route path="/checkoutpage" element={<CheckoutPage />} />
           </Routes>
-          <Footer />
         </BrowserRouter>
+        <Footer />
       </div>
     </UserProvider >
 
