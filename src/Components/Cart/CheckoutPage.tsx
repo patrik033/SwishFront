@@ -2,6 +2,12 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../Auth/User/UserContext';
+import postnordIcon from '../../assets/postnord.png';
+import dhlIcon from '../../assets/dhl.png';
+import swishIcon from '../../assets/swish.png';
+import stripeIcon from '../../assets/stripe.png';
+import NearestDHLLocations from '../Locations/NearestDhlLocations';
+import NearestPostNordLocations from '../Locations/NearestPostNordLocations';
 
 interface CartDetailsResponse {
     totalAmount: number;
@@ -22,6 +28,7 @@ interface CartItem {
 
 interface AddressDetails {
     streetAddress: string;
+    streetNumber: string;
     city: string;
     zipCode: string;
 }
@@ -36,7 +43,7 @@ const CheckoutPage: React.FC = () => {
     const [addressDetails, setAddressDetails] = useState<AddressDetails | null>(null);
     const [selectedDeliveryOption, setSelectedDeliveryOption] = useState('');
     const [selectedPaymentOption, setSelectedPaymentOption] = useState('');
-    const [inputValues, setInputValues] = useState<AddressDetails>({ streetAddress: '', zipCode: '', city: '' });
+    const [inputValues, setInputValues] = useState<AddressDetails>({ streetNumber: '', streetAddress: '', zipCode: '', city: '' });
     const { user } = useUser();
     console.log(cartDetails);
 
@@ -156,6 +163,15 @@ const CheckoutPage: React.FC = () => {
                 />
             </div>
             <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">Street Number:</label>
+                <input
+                    type="text"
+                    className="border border-gray-300 rounded-md p-2 w-full"
+                    value={inputValues.streetNumber}
+                    onChange={(e) => handleAddressChange('streetNumber', e.target.value)}
+                />
+            </div>
+            <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">City:</label>
                 <input
                     type="text"
@@ -176,6 +192,35 @@ const CheckoutPage: React.FC = () => {
     const handleDeliveryOptionChange = (value: string) => {
         setSelectedDeliveryOption(value);
     };
+
+    // const callServicePointUrl = async (apiUrl: string) => {
+    //     const response = await axios.post(apiUrl, addressDetails);
+    //     const responseData = response.data;
+    //     //console.log(responseData)
+    //     return responseData
+    // }
+
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         let apiUrl = "";
+    //         if (selectedDeliveryOption === 'postnord') {
+    //             apiUrl = 'http://localhost:5035/api/PostNord';
+    //         } else if (selectedDeliveryOption === 'dhl') {
+    //             apiUrl = 'http://localhost:5035/api/Dhl';
+    //         }
+
+    //         if (addressDetails && apiUrl) {
+    //             try {
+    //                 const response = await callServicePointUrl(apiUrl);
+    //                 console.log(response);
+    //             } catch (error) {
+    //                 console.error('Error fetching service points:', error);
+    //             }
+    //         }
+    //     };
+
+    //     fetchData();
+    // }, [selectedDeliveryOption, addressDetails]);
 
     const handlePaymentOptionChange = (value: string) => {
         setSelectedPaymentOption(value);
@@ -220,31 +265,32 @@ const CheckoutPage: React.FC = () => {
                     {/* Delivery Options Section */}
                     <div className="mb-8">
                         <h2 className="text-2xl font-bold mb-4">Delivery Options</h2>
-                        <div className="flex items-center mb-4">
-                            <input
-                                type="radio"
-                                id="postnord"
-                                name="deliveryOption"
-                                value="postnord"
-                                // Handle the change event
-                                onChange={(e) => handleDeliveryOptionChange(e.target.value)}
-                            />
-                            <label htmlFor="postnord" className="ml-2 cursor-pointer">
-                                <img src="postnord-image-url" alt="PostNord" className="w-8 h-8" />
-                                PostNord
+                        <div className="flex flex-col mb-4">
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                    type="radio"
+                                    id="postnord"
+                                    name="deliveryOption"
+                                    value="postnord"
+                                    onChange={(e) => handleDeliveryOptionChange(e.target.value)}
+                                    className="mr-2 cursor-pointer"
+                                />
+                                <img src={postnordIcon} alt="PostNord" className="w-20 h-20" />
+                                <span className="ml-2">PostNord</span>
                             </label>
                         </div>
-                        <div className="flex items-center">
-                            <input
-                                type="radio"
-                                id="dhl"
-                                name="deliveryOption"
-                                value="dhl"
-                                onChange={(e) => handleDeliveryOptionChange(e.target.value)}
-                            />
-                            <label htmlFor="dhl" className="ml-2 cursor-pointer">
-                                <img src="dhl-image-url" alt="DHL" className="w-8 h-8" />
-                                DHL
+                        <div className="flex flex-col">
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                    type="radio"
+                                    id="dhl"
+                                    name="deliveryOption"
+                                    value="dhl"
+                                    onChange={(e) => handleDeliveryOptionChange(e.target.value)}
+                                    className="mr-2 cursor-pointer"
+                                />
+                                <img src={dhlIcon} alt="DHL" className="w-20 h-20" />
+                                <span className="ml-2">DHL</span>
                             </label>
                         </div>
                     </div>
@@ -261,21 +307,21 @@ const CheckoutPage: React.FC = () => {
                                 onChange={(e) => handlePaymentOptionChange(e.target.value)}
                             />
                             <label htmlFor="swish" className="ml-2 cursor-pointer">
-                                <img src="swish-image-url" alt="Swish" className="w-8 h-8" />
+                                <img src={swishIcon} alt="Swish" className="w-12 " />
                                 Swish
                             </label>
                         </div>
                         <div className="flex items-center">
                             <input
                                 type="radio"
-                                id="card"
+                                id="stripe"
                                 name="paymentOption"
-                                value="card"
+                                value="stripe"
                                 onChange={(e) => handlePaymentOptionChange(e.target.value)}
                             />
                             <label htmlFor="card" className="ml-2 cursor-pointer">
-                                <img src="card-image-url" alt="Card" className="w-8 h-8" />
-                                Card
+                                <img src={stripeIcon} alt="stripe" className="w-16 " />
+                                Stripe
                             </label>
                         </div>
                     </div>
@@ -291,6 +337,10 @@ const CheckoutPage: React.FC = () => {
                                 <p>{addressDetails.streetAddress}</p>
                             </div>
                             <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">Street Number:</label>
+                                <p>{addressDetails.streetNumber}</p>
+                            </div>
+                            <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2">Zip Code:</label>
                                 <p>{addressDetails.zipCode}</p>
                             </div>
@@ -303,6 +353,14 @@ const CheckoutPage: React.FC = () => {
                     {!addressDetails && renderAddressForm()}
                 </div>
             </div>
+
+            {addressDetails && selectedDeliveryOption == "dhl" &&
+                <NearestDHLLocations address={addressDetails} />
+            }
+            {addressDetails && selectedDeliveryOption == "postnord" &&
+                <NearestPostNordLocations address={addressDetails} />
+            }
+
 
             {/* Checkout Button - Always at the Bottom */}
             <div className="flex justify-center items-center">

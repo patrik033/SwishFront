@@ -5,8 +5,6 @@ import {
 } from "react-router-dom";
 
 
-
-
 const Return = () => {
     const [status, setStatus] = useState(null);
     const [customerEmail, setCustomerEmail] = useState('');
@@ -19,28 +17,13 @@ const Return = () => {
         setStatus(data.status);
 
         console.log(data);
-
     }
+
     useEffect(() => {
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const sessionId = urlParams.get('session_id');
         fetchData(sessionId);
-
-
-
-
-        // fetch(`/session-status?session_id=${sessionId}`)
-        //     .then((res) => res.json())
-        //     .then((data) => {
-        //         console.log(data.status)
-        //         console.log(data.customerEmail)
-        //         // console.log(data);
-        //         setCustomerEmail(data.customerEmail);
-        //         setStatus(data.status);
-
-
-        //     });
     }, []);
 
     if (status === 'open') {

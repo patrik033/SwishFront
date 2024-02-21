@@ -44,7 +44,6 @@ const ProductDetails: React.FC = () => {
 
 
     const getTypeSpecificComponent = (product: Product) => {
-        console.log(product)
         switch (product.type) {
             case "Car":
                 return <CarDetails {...product} />;

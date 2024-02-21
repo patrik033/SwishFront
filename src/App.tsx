@@ -16,7 +16,9 @@ import CartDetails from "./Components/Cart/CartDetails"
 import Checkout from "./Components/Checkout/Checkout"
 import ReturnCheckout from "./Components/CheckoutReturn/ReturnCheckout"
 import CheckoutPage from "./Components/Cart/CheckoutPage"
-import NearestDhlLocations from "./Components/Locations/NearestDhlLocations"
+import SwishCallback from "./Components/swish/SwishCallback"
+// import GoogleMaps from "./Components/Locations/Google/GoogleMaps"
+// import NearestDhlLocations from "./Components/Locations/NearestDhlLocations"
 
 
 function App() {
@@ -40,7 +42,9 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/return" element={<ReturnCheckout />} />
             <Route path="/checkoutpage" element={<CheckoutPage />} />
-            <Route path="/dhlLocation" element={<NearestDhlLocations/>}/>
+            <Route path="/SwishCallback" element={<SwishCallback />} />
+            {/* <Route path="/maps" element={<GoogleMaps />} /> */}
+            {/* <Route path="/dhlLocation" element={<NearestDhlLocations/>}/> */}
           </Routes>
         </BrowserRouter>
         <Footer />
